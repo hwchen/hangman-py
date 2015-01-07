@@ -3,19 +3,36 @@
 # Server file for hangman game
 
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request, make_response
 import random
 import sys
 import string
 
 # This section is for flask setup, routes.
 
-
 app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return game.to_json()
+    return jsonify(game.to_json())
+
+@app.route('/guess', methods = ['PUT'])
+def put_guess():
+    #server-side error checks: 
+    guess_json = request.get_json(force=True)
+    game.guess(int(guess_json['spot']),guess_json['letter'])
+    game.state()
+    return jsonify(game.to_json())
+
+
+@app.errorhandler(404)
+def not_found(error):
+    return make_response(jsonify({'error': 'Not found'}), 404)
+
+@app.errorhandler(400)
+def not_found(error):
+    return make_response(jsonify({'error': 'Not found'}), 404)
+    
 
 # This section for game logic.
 
@@ -29,11 +46,11 @@ class Game(object):
         self.result = "continue"
 
     def to_json(self):
-        return jsonify({'target'  : self.target,
-                        'wrong'   : self.wrong,
-                        'current' : self.current,
-                        'result'  : self.result
-                       })
+        return {'target'  : self.target,
+                'wrong'   : self.wrong,
+                'current' : self.current,
+                'result'  : self.result
+               }
 
     def load_words(self, file_path):
         """Reads file into a List
@@ -75,6 +92,10 @@ class Game(object):
 
 
 if __name__ == '__main__':
+    #Can't be scaled this way.
+    #How to scale? Don't want to grab one thread, just make
+    #asynchronous. For web side. On back-end, multiple games may
+    #run at once.
     game = Game()
     game.load_words("words.txt")
     game.init_target()
