@@ -1,8 +1,92 @@
 <!doctype html>
 <html lang=en-us>
 <head><meta charset=utf-8>
-<title></title>
+    <title>Hangman!</title>
+    <script src="./js/react-0.12.2.js"></script>
+    <script src="./js/JSXTransformer-0.12.2.js"></script>
+    <script src="./js/jquery-1.11.2.min.js"></script>
+    <!-- uncomment in production
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.12.2/JSXTransformer.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.12.2/react.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    -->
 </head>
 <body>
-Hello
+    <div id="content"></div>
+    <script type="text/jsx">
+    var data = 
+        {sessionID: 1, sessionWins: 1, sessionLosses: 4, current: "***v*", wrong: 3}
+
+    //process data from json outside of rendering.
+
+    var GameBox = React.createClass({
+        render: function() {
+            return (
+                <div className="gameBox">
+                    <h2>Hangman!</h2>
+                    <SessionStats data={this.props.data} />
+                    <GallowsGraphic data={this.props.data} />
+                    <WordFields data={this.props.data} />
+                    <GameForm data={this.props.data} />
+                </div>
+            );
+        }
+    });
+
+    var GameForm = React.createClass({
+        render: function() {
+            return(
+                <div className="gameForm">
+                <h4>form for submitting guess</h4>
+                    I am a gameForm
+                    <p> And a button for submit</p>
+                </div>
+            );
+        }
+    });
+
+
+    var WordFields = React.createClass({
+        render: function() {
+            return(
+                <div className="wordFields">
+                    <h3>Word Field</h3>
+                    I am a wordFields (later, loop for letters) 
+                    the word is {this.props.data.current}
+                </div>
+            );
+        }
+    });
+
+    var GallowsGraphic= React.createClass({
+        render: function() {
+            return(
+                <div className="gallowGraphic">
+                    <h3>The Gallows</h3>
+                    the # of wrong guesses is {this.props.data.wrong}
+                </div>
+            );
+        }
+    });
+
+    var SessionStats= React.createClass({
+        render: function() {
+            return(
+                <div className="sessionStats">
+                <h4>Session Stats</h4>
+                    I am a sessionStats.
+                    SessionID = {this.props.data.sessionID}
+                    score = {this.props.data.sessionWins} / {this.props.data.sessionLosses}
+                </div>
+            );
+        }
+    });
+
+    React.render(
+        <GameBox data={data} />,
+        document.getElementById('content')
+    );
+
+    </script>
 </body>
+</html>
