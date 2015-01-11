@@ -23,7 +23,22 @@
             return {data}
         },
 
-        //later, change so that this is called after submitting?
+        handleGameSubmit: function(guess) {
+            $.ajax({
+                url: this.props.url,
+                contentType: "application/json",
+                datatype: 'json',
+                type: 'PUT',
+                data: JSON.stringify(guess),
+                success: function(data) {
+                    this.setState({data});
+                }.bind(this),
+                error: function(xhr, status, err) {
+                    console.error(this.props.url, status, err.toString());
+                }.bind(this)
+            });
+        },
+
         componentDidMount: function() {
             $.ajax({
                 url: this.props.url,
@@ -44,7 +59,7 @@
                     <SessionStats data={this.state.data} />
                     <GallowsGraphic data={this.state.data} />
                     <WordFields data={this.state.data} />
-                    <GameForm data={this.state.data} />
+                    <GameForm onGameSubmit={this.handleGameSubmit} />
                 </div>
             );
         }
@@ -56,9 +71,10 @@
             e.preventDefault();
             var spot = this.refs.spot.getDOMNode().value.trim();
             var letter = this.refs.letter.getDOMNode().value.trim();
-            if (!spot || !author) {
+            if (!spot || !letter) {
                 return;
             }
+            this.props.onGameSubmit({spot: spot, letter: letter});
             //clear field values
             this.refs.spot.getDOMNode().value = '';
             this.refs.letter.getDOMNode().value = '';
@@ -106,8 +122,8 @@
             return(
                 <div className="sessionStats">
                 <h4>Session Stats</h4>
-                    SessionID = {this.props.data.sessionID}
-                    score = {this.props.data.sessionWins} / {this.props.data.sessionLosses}
+                    <p>SessionID = {this.props.data.sessionID}</p>
+                    <p>score = {this.props.data.sessionWins} / {this.props.data.sessionLosses}</p>
                 </div>
             );
         }

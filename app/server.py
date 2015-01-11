@@ -20,12 +20,16 @@ def index():
 def game_state():
     return jsonify(session.to_json())
 
-@app.route('/guess', methods = ['PUT'])
+@app.route('/game_state', methods = ['PUT'])
 def put_guess():
     #server-side error checks: 
     guess_json = request.get_json(force=True)
     session.current_game.guess(int(guess_json['spot']),guess_json['letter'])
     session.current_game.state()
+    return jsonify(session.current_game.to_json())
+
+@app.route('/cheat')
+def cheat():
     return jsonify(session.current_game.to_json())
 
 
