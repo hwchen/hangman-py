@@ -14,33 +14,66 @@
 <body>
     <div id="content"></div>
     <script type="text/jsx">
-    var data = 
-        {sessionID: 1, sessionWins: 1, sessionLosses: 4, current: "***v*", wrong: 3}
+    var data = {}
 
     //process data from json outside of rendering.
 
     var GameBox = React.createClass({
+        getInitialState: function () {
+            return {data}
+        },
+
+        //later, change so that this is called after submitting?
+        componentDidMount: function() {
+            $.ajax({
+                url: this.props.url,
+                dataType: 'json',
+                success: function(data) {
+                    this.setState({data});
+                }.bind(this),
+                error: function(xhr, status, err) {
+                    console.error(this.props.url, status, err.toString());
+                }.bind(this)
+            });
+        },
+
         render: function() {
             return (
                 <div className="gameBox">
                     <h2>Hangman!</h2>
-                    <SessionStats data={this.props.data} />
-                    <GallowsGraphic data={this.props.data} />
-                    <WordFields data={this.props.data} />
-                    <GameForm data={this.props.data} />
+                    <SessionStats data={this.state.data} />
+                    <GallowsGraphic data={this.state.data} />
+                    <WordFields data={this.state.data} />
+                    <GameForm data={this.state.data} />
                 </div>
             );
         }
     });
 
     var GameForm = React.createClass({
+        handleSubmit: function(e) {
+            //gets field values
+            e.preventDefault();
+            var spot = this.refs.spot.getDOMNode().value.trim();
+            var letter = this.refs.letter.getDOMNode().value.trim();
+            if (!spot || !author) {
+                return;
+            }
+            //clear field values
+            this.refs.spot.getDOMNode().value = '';
+            this.refs.letter.getDOMNode().value = '';
+            return;
+        },
         render: function() {
             return(
-                <div className="gameForm">
-                <h4>form for submitting guess</h4>
-                    I am a gameForm
-                    <p> And a button for submit</p>
-                </div>
+                <form className="gameForm" onSubmit={this.handleSubmit}>
+                    <h4>Guess</h4>
+                    <label for="spot">Spot</label>
+                    <input type="text" id="spot" ref="spot" />
+                    <label for="letter">Letter</label>
+                    <input type="text" id="letter" ref="letter" />
+                    <input type="submit" value="Submit" />
+                </form>
             );
         }
     });
@@ -51,7 +84,6 @@
             return(
                 <div className="wordFields">
                     <h3>Word Field</h3>
-                    I am a wordFields (later, loop for letters) 
                     the word is {this.props.data.current}
                 </div>
             );
@@ -74,7 +106,6 @@
             return(
                 <div className="sessionStats">
                 <h4>Session Stats</h4>
-                    I am a sessionStats.
                     SessionID = {this.props.data.sessionID}
                     score = {this.props.data.sessionWins} / {this.props.data.sessionLosses}
                 </div>
@@ -83,7 +114,7 @@
     });
 
     React.render(
-        <GameBox data={data} />,
+        <GameBox url="http://localhost:5000/game_state" />,
         document.getElementById('content')
     );
 
