@@ -10,19 +10,23 @@ import string
 
 # This section is for flask setup, routes.
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='')
 
 @app.route('/')
 def index():
-    return jsonify(game.to_json())
+    return app.send_static_file('index.html')
+
+@app.route('/game_state')
+def game_state():
+    return jsonify(session.to_json())
 
 @app.route('/guess', methods = ['PUT'])
 def put_guess():
     #server-side error checks: 
     guess_json = request.get_json(force=True)
-    game.guess(int(guess_json['spot']),guess_json['letter'])
-    game.state()
-    return jsonify(game.to_json())
+    session.current_game.guess(int(guess_json['spot']),guess_json['letter'])
+    session.current_game.state()
+    return jsonify(session.current_game.to_json())
 
 
 @app.errorhandler(404)
@@ -35,6 +39,24 @@ def not_found(error):
     
 
 # This section for game logic.
+
+class Session(object):
+
+    def __init__(self):
+        self.sessionID = 1 
+        self.sessionWins = 0
+        self.sessionLosses = 0
+        self.current_game = Game()
+
+    def to_json(self):
+        return {'sessionID': self.sessionID,
+                'sessionsWins': self.sessionWins,
+                'sesssionLosses': self.sessionLosses,
+                'current' : self.current_game.current,
+                'wrong' : self.current_game.wrong
+               }
+
+
 
 class Game(object):
 
@@ -96,7 +118,13 @@ if __name__ == '__main__':
     #How to scale? Don't want to grab one thread, just make
     #asynchronous. For web side. On back-end, multiple games may
     #run at once.
-    game = Game()
-    game.load_words("words.txt")
-    game.init_target()
+
+    session = Session()
+    session.current_game.load_words("words.txt")
+    session.current_game.init_target()
     app.run(debug=True)
+
+    #game = Game()
+    #game.load_words("words.txt")
+    #game.init_target()
+    #app.run(debug=True)

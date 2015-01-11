@@ -84,7 +84,6 @@
             return(
                 <div className="wordFields">
                     <h3>Word Field</h3>
-                    I am a wordFields (later, loop for letters) 
                     the word is {this.props.data.current}
                 </div>
             );
@@ -107,7 +106,6 @@
             return(
                 <div className="sessionStats">
                 <h4>Session Stats</h4>
-                    I am a sessionStats.
                     SessionID = {this.props.data.sessionID}
                     score = {this.props.data.sessionWins} / {this.props.data.sessionLosses}
                 </div>
@@ -116,7 +114,7 @@
     });
 
     React.render(
-        <GameBox url="http://localhost:5000/data" />,
+        <GameBox url="http://localhost:5000/game_state" />,
         document.getElementById('content')
     );
 
