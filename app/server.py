@@ -6,6 +6,7 @@ from flask import Flask, jsonify, request, make_response
 import random
 import sys
 import string
+import uuid
 
 # This section is for flask routes.
 
@@ -47,15 +48,31 @@ def not_found(error):
 def not_found(error):
     return make_response(jsonify({'error': 'Not found'}), 404)
 
-# DB section
+# for mulitple sessions (not really scalable now, but works)
+# Real scalability probably requires db lookups and sessions (closer to stateless)
+
+class SessionManager(object):
+    def __init__(self):
+        self.sessions_dict = {}
+
+    def new_session(self):
+        new_session_id = uuid.uuid4()
+        self.sessions_dict[new_session_id] = Session()
+
+    def get_session(self, sessionID):
+        if sessionID in self.sessions_dict:
+            return self.sessions_dict[sessionID]
+
+    # def del_session()
+        
     
 
 # This section for game logic.
 
 class Session(object):
 
-    def __init__(self):
-        self.sessionID = 1 
+    def __init__(self,new_session_id = 1):
+        self.sessionID = new_session_id 
         self.sessionWins = 0
         self.sessionLosses = 0
         self.current_game = Game()
