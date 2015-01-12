@@ -1,14 +1,13 @@
 #! /usr/bin/env python3
 
-# Server file for hangman game
-
+# Server for hangman game
 
 from flask import Flask, jsonify, request, make_response
 import random
 import sys
 import string
 
-# This section is for flask setup, routes.
+# This section is for flask routes.
 
 app = Flask(__name__, static_url_path='')
 
@@ -24,7 +23,7 @@ def game_state():
 def put_guess():
     """basic game loop. refactored it into Session.iterate()"""
     guess_json = request.get_json(force=True)
-    session.iterate(int(guess_json['spot']),guess_json['letter'])
+    session.iterate(guess_json['spot'],guess_json['letter'])
     return jsonify(session.to_json())
 
 @app.route('/new_game')
@@ -89,7 +88,6 @@ class Session(object):
         self.current_game.guess(spot,letter)
         self.current_game.update_state()
         self.update_statistics()
-        
 
 class Game(object):
 
@@ -126,24 +124,39 @@ class Game(object):
            sets self.current as hidden representation of target"""
         self.target = random.choice(self.words)
         self.current = '*' * len(self.target)
-        
 
     def guess(self, spot, letter):
-        # check if it was already guessed
-        # check if guess is out of bounds
-        # check if it's letter and number
-        # -- do these at the client first?
-        if self.target[spot] == letter:
+        """checks for: out of bounds, is letter, is number. Then if guess is correct
+            no return, only sets Game attributes .message, .current"""
+
+        # check if spot is a number, breaks out of function if not a number
+        if not spot.isdigit():
+            self.message = "Your guess of spot {0} is not a number".format(spot)
+            return
+
+        # converts spot to integer if function above doesn't break out.
+        spot_int = int(spot)
+
+        # checking spot index bounds
+        if spot_int > len(self.target)-1:
+            self.message = "Spot {0} is outside the length of the target word".format(spot)
+
+        # check if it's alpha
+        elif not letter.isalpha():
+            self.message = "Your guess of {0} is not a letter".format(letter)
+
+        #check if guess is correct
+        elif self.target[spot_int] == letter.lower():
             print("yes")
-            if spot == len(self.target) -1:
-                self.current = self.current[:spot] + letter
+            if spot_int == len(self.target) -1:
+                self.current = self.current[:spot_int] + letter
             else:
-                self.current = self.current[:spot] + letter + self.current[spot + 1:]
+                self.current = self.current[:spot_int] + letter + self.current[spot_int + 1:]
             self.message = "Good guess!"
         else: 
             print("no")
             self.wrong += 1
-            self.message = "Sorry, wrong answer."
+            self.message = "Sorry, incorrect guess."
 
     def update_state(self):
         if self.current == self.target:
@@ -151,19 +164,9 @@ class Game(object):
         elif self.wrong == 10:
             self.result = "lose"
 
-
 if __name__ == '__main__':
-    #Can't be scaled this way.
-    #How to scale? Don't want to grab one thread, just make
-    #asynchronous. For web side. On back-end, multiple games may
-    #run at once.
-
     session = Session()
     session.current_game.load_words("words.txt")
     session.current_game.init_target()
     app.run(debug=True)
 
-    #game = Game()
-    #game.load_words("words.txt")
-    #game.init_target()
-    #app.run(debug=True)
