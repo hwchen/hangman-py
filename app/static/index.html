@@ -59,6 +59,7 @@
                     <SessionStats data={this.state.data} />
                     <GallowsGraphic data={this.state.data} />
                     <WordFields data={this.state.data} />
+                    <GameMessage data={this.state.data} />
                     <GameForm onGameSubmit={this.handleGameSubmit} />
                 </div>
             );
@@ -90,6 +91,17 @@
                     <input type="text" id="letter" ref="letter" />
                     <input type="submit" value="Submit" />
                 </form>
+            );
+        }
+    });
+
+    var GameMessage = React.createClass({
+        render: function() {
+            return(
+                <div className="gameMessage">
+                    <h3>Message</h3>
+                    {this.props.data.message}
+                </div>
             );
         }
     });

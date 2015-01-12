@@ -79,8 +79,10 @@ class Session(object):
            but seems bad to mutate from below)"""
         if self.current_game.result == "win":
             self.sessionWins += 1
+            self.current_game.message = "You won!"
         elif self.current_game.result == "lose":
             self.sessionLosses += 1
+            self.current_game.message = "You lost!"
             
 
     def iterate(self, spot, letter):
@@ -137,9 +139,11 @@ class Game(object):
                 self.current = self.current[:spot] + letter
             else:
                 self.current = self.current[:spot] + letter + self.current[spot + 1:]
+            self.message = "Good guess!"
         else: 
             print("no")
             self.wrong += 1
+            self.message = "Sorry, wrong answer."
 
     def update_state(self):
         if self.current == self.target:
