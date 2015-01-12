@@ -20,7 +20,7 @@
 
     var GameBox = React.createClass({
         getInitialState: function () {
-            return {data}
+            return {data};
         },
 
         handleGameSubmit: function(guess) {
@@ -136,8 +136,7 @@
         render: function() {
             return(
                 <div className="gameMessage">
-                    <h3>Message</h3>
-                    {this.props.data.message}
+                    <p><em>Message: </em>{this.props.data.message}</p>
                 </div>
             );
         }
@@ -148,8 +147,8 @@
         render: function() {
             return(
                 <div className="wordFields">
-                    <h3>Word Field</h3>
-                    the word is {this.props.data.current}
+                    <h3>Word</h3>
+                    The word is {this.props.data.current}
                 </div>
             );
         }
@@ -157,10 +156,16 @@
 
     var GallowsGraphic= React.createClass({
         render: function() {
+            var gallow = "./media/h".concat(this.props.data.wrong, ".png");
+            var divStyle = {
+                borderStyle: 'solid',
+                borderWidth: '2px'
+            };
             return(
                 <div className="gallowGraphic">
                     <h3>The Gallows</h3>
-                    the # of wrong guesses is {this.props.data.wrong}
+                    <img style={divStyle} src={gallow} alt="gallows" height="200" width="200" /> 
+                    <p>The # of wrong guesses is {this.props.data.wrong}</p>
                 </div>
             );
         }
@@ -170,10 +175,7 @@
         render: function() {
             return(
                 <div className="sessionStats">
-                <h4>Session Stats</h4>
-                    <p>SessionID = {this.props.data.sessionID}</p>
-                    <p>wins = {this.props.data.sessionWins}</p>
-                    <p>losses = {this.props.data.sessionLosses}</p>
+                    <p><em>Session Stats: </em>wins = {this.props.data.sessionWins}, losses = {this.props.data.sessionLosses}</p>
                 </div>
             );
         }
