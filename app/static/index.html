@@ -94,13 +94,15 @@
             //clear field values
             this.refs.spot.getDOMNode().value = '';
             this.refs.letter.getDOMNode().value = '';
+            // move cursor back to spot
+            this.refs.spot.getDOMNode().focus();
             return;
         },
         render: function() {
             return(
                 <form className="gameForm" onSubmit={this.handleSubmit}>
                     <h4>Guess</h4>
-                    <label for="spot">Spot</label>
+                    <label for="spot">Spot (index starting at 0)</label>
                     <input type="text" id="spot" ref="spot" />
                     <label for="letter">Letter</label>
                     <input type="text" id="letter" ref="letter" />
