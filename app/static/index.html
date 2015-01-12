@@ -39,6 +39,20 @@
             });
         },
 
+        handleNewGameClick: function() {
+            $.ajax({
+                url: "http://localhost:5000/new_game", // hardcoded for now 
+                contentType: "application/json",
+                datatype: 'json',
+                success: function(data) {
+                    this.setState({data});
+                }.bind(this),
+                error: function(xhr, status, err) {
+                    console.error(this.props.url, status, err.toString());
+                }.bind(this)
+            });
+        },
+
         componentDidMount: function() {
             $.ajax({
                 url: this.props.url,
@@ -61,6 +75,7 @@
                     <WordFields data={this.state.data} />
                     <GameMessage data={this.state.data} />
                     <GameForm onGameSubmit={this.handleGameSubmit} />
+                    <NewGameButton onNewGameClick={this.handleNewGameClick} />
                 </div>
             );
         }
@@ -91,6 +106,21 @@
                     <input type="text" id="letter" ref="letter" />
                     <input type="submit" value="Submit" />
                 </form>
+            );
+        }
+    });
+
+    var NewGameButton = React.createClass({
+        handleClick: function(e) {
+            e.preventDefault();
+            this.props.onNewGameClick();
+            return;
+        },
+        render: function() {
+            return(
+                <button className="newGameButton" onClick={this.handleClick}>
+                New Game
+                </button>
             );
         }
     });

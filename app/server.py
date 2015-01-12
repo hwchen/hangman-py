@@ -22,7 +22,7 @@ def game_state():
 
 @app.route('/game_state', methods = ['PUT'])
 def put_guess():
-    """basic game loop. refactor it into Session.iterate()"""
+    """basic game loop. refactored it into Session.iterate()"""
     guess_json = request.get_json(force=True)
     session.iterate(int(guess_json['spot']),guess_json['letter'])
     return jsonify(session.to_json())
