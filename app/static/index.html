@@ -67,6 +67,11 @@
         },
 
         render: function() {
+            // render form only when game state is "continue"
+            var partial;
+            if (this.state.data.result === "continue") {
+                partial = <GameForm onGameSubmit={this.handleGameSubmit} />
+            }
             return (
                 <div className="gameBox">
                     <h2>Hangman!</h2>
@@ -74,7 +79,7 @@
                     <GallowsGraphic data={this.state.data} />
                     <WordFields data={this.state.data} />
                     <GameMessage data={this.state.data} />
-                    <GameForm onGameSubmit={this.handleGameSubmit} />
+                    {partial}
                     <NewGameButton onNewGameClick={this.handleNewGameClick} />
                 </div>
             );

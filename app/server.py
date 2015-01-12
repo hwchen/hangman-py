@@ -66,7 +66,8 @@ class Session(object):
                 'sessionLosses': self.sessionLosses,
                 'current' : self.current_game.current,
                 'wrong' : self.current_game.wrong,
-                'message' : self.current_game.message
+                'message' : self.current_game.message,
+                'result' : self.current_game.result
                }
 
     def new_game(self):
