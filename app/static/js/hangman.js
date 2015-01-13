@@ -1,10 +1,6 @@
-var data = {}
-
-//process data from json outside of rendering.
-
 var GameBox = React.createClass({
     getInitialState: function () {
-        return {data};
+        return {data:{}};
     },
 
     handleGameSubmit: function(guess) {
@@ -15,7 +11,7 @@ var GameBox = React.createClass({
             type: 'PUT',
             data: JSON.stringify(guess),
             success: function(data) {
-                this.setState({data});
+                this.setState({data:data});
             }.bind(this),
             error: function(xhr, status, err) {
                 console.error(this.props.url, status, err.toString());
@@ -31,7 +27,7 @@ var GameBox = React.createClass({
             type: 'PUT',
             data: JSON.stringify(submit),
             success: function(data) {
-                this.setState({data});
+                this.setState({data:data});
             }.bind(this),
             error: function(xhr, status, err) {
                 console.error(this.props.url, status, err.toString());
@@ -44,7 +40,7 @@ var GameBox = React.createClass({
             url: this.props.url,
             dataType: 'json',
             success: function(data) {
-                this.setState({data});
+                this.setState({data:data});
             }.bind(this),
             error: function(xhr, status, err) {
                 console.error(this.props.url, status, err.toString());
