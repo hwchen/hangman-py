@@ -23,9 +23,13 @@ def game_state():
         loading index.html for the first time"""
     #new session
     new_session_id = uuid.uuid4().hex #in production, should be encrypted?
-                                        # do i need to check if uuid already exists?
+
+    #Make sure there isn't an identical session id 
+    while new_session_id in session_manager.sessions_dict:
+        new_session_id = uuid4().hex
 
     session_manager.new_session(new_session_id)
+
     #new game
     session = session_manager.get_session(new_session_id)
     session.current_game.load_words("words.txt")#refactor to Session()
