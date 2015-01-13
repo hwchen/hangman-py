@@ -1,8 +1,12 @@
+// GameBox is the main container for app
+// includes handles for initializing, submitting
+// renders children components
 var GameBox = React.createClass({
     getInitialState: function () {
         return {data:{}};
     },
-
+    
+    //submit a guess using the game submit form
     handleGameSubmit: function(guess) {
         $.ajax({
             url: this.props.url,
@@ -19,6 +23,7 @@ var GameBox = React.createClass({
         });
     },
 
+    // starts a new game in the same session on clicking new game button
     handleNewGameClick: function(submit) {
         $.ajax({
             url: "http://localhost:5000/new_game", // hardcoded for now 
@@ -35,6 +40,7 @@ var GameBox = React.createClass({
         });
     },
 
+    // updates initial state for app
     componentDidMount: function() {
         $.ajax({
             url: this.props.url,
@@ -48,12 +54,14 @@ var GameBox = React.createClass({
         });
     },
 
+    // render children components
     render: function() {
         // render form only when game state is "continue"
         var partial;
         if (this.state.data.result === "continue") {
             partial = <GameForm onGameSubmit={this.handleGameSubmit} data={this.state.data} />
         }
+        //renders all components
         return (
             <div className="gameBox">
                 <h2>Hangman!</h2>
@@ -68,6 +76,61 @@ var GameBox = React.createClass({
     }
 });
 
+// Component for session stats
+var SessionStats= React.createClass({
+    render: function() {
+        return(
+            <div className="sessionStats">
+                sessionID: {this.props.data.sessionID}
+                <p><em>Session Stats: </em>wins = {this.props.data.sessionWins}, losses = {this.props.data.sessionLosses}</p>
+            </div>
+        );
+    }
+});
+
+// Component for hangman graphics
+var GallowsGraphic= React.createClass({
+    render: function() {
+        // loads a numbered png file depending on number wrong
+        var gallow = "./media/h".concat(this.props.data.wrong, ".png");
+        var divStyle = {
+            borderStyle: 'solid',
+            borderWidth: '2px'
+        };
+        return(
+            <div className="gallowGraphic">
+                <h3>The Gallows</h3>
+                <img style={divStyle} src={gallow} alt="gallows" height="200" width="200" /> 
+                <p>The # of wrong guesses is {this.props.data.wrong}</p>
+            </div>
+        );
+    }
+});
+
+//Component for displaying current state of guesses
+var WordFields = React.createClass({
+    render: function() {
+        return(
+            <div className="wordFields">
+                <h3>Word</h3>
+                The word is {this.props.data.current}
+            </div>
+        );
+    }
+});
+
+// Component for messages from server (e.g. good guess, you win, guess not a letter)
+var GameMessage = React.createClass({
+    render: function() {
+        return(
+            <div className="gameMessage">
+                <p><em>Message: </em>{this.props.data.message}</p>
+            </div>
+        );
+    }
+});
+
+// Component for submitting a guess (a letter at a spot)
 var GameForm = React.createClass({
     handleSubmit: function(e) {
         //gets field values
@@ -100,6 +163,7 @@ var GameForm = React.createClass({
     }
 });
 
+//Component for creating a new game in the same session
 var NewGameButton = React.createClass({
     handleClick: function(e) {
         e.preventDefault();
@@ -116,56 +180,7 @@ var NewGameButton = React.createClass({
     }
 });
 
-var GameMessage = React.createClass({
-    render: function() {
-        return(
-            <div className="gameMessage">
-                <p><em>Message: </em>{this.props.data.message}</p>
-            </div>
-        );
-    }
-});
-
-
-var WordFields = React.createClass({
-    render: function() {
-        return(
-            <div className="wordFields">
-                <h3>Word</h3>
-                The word is {this.props.data.current}
-            </div>
-        );
-    }
-});
-
-var GallowsGraphic= React.createClass({
-    render: function() {
-        var gallow = "./media/h".concat(this.props.data.wrong, ".png");
-        var divStyle = {
-            borderStyle: 'solid',
-            borderWidth: '2px'
-        };
-        return(
-            <div className="gallowGraphic">
-                <h3>The Gallows</h3>
-                <img style={divStyle} src={gallow} alt="gallows" height="200" width="200" /> 
-                <p>The # of wrong guesses is {this.props.data.wrong}</p>
-            </div>
-        );
-    }
-});
-
-var SessionStats= React.createClass({
-    render: function() {
-        return(
-            <div className="sessionStats">
-                sessionID: {this.props.data.sessionID}
-                <p><em>Session Stats: </em>wins = {this.props.data.sessionWins}, losses = {this.props.data.sessionLosses}</p>
-            </div>
-        );
-    }
-});
-
+//Render all
 React.render(
     <GameBox url="http://localhost:5000/game_state" />,
     document.getElementById('content')
