@@ -39,11 +39,13 @@
             });
         },
 
-        handleNewGameClick: function() {
+        handleNewGameClick: function(submit) {
             $.ajax({
                 url: "http://localhost:5000/new_game", // hardcoded for now 
                 contentType: "application/json",
                 datatype: 'json',
+                type: 'PUT',
+                data: JSON.stringify(submit),
                 success: function(data) {
                     this.setState({data});
                 }.bind(this),
@@ -70,7 +72,7 @@
             // render form only when game state is "continue"
             var partial;
             if (this.state.data.result === "continue") {
-                partial = <GameForm onGameSubmit={this.handleGameSubmit} />
+                partial = <GameForm onGameSubmit={this.handleGameSubmit} data={this.state.data} />
             }
             return (
                 <div className="gameBox">
@@ -80,7 +82,7 @@
                     <WordFields data={this.state.data} />
                     <GameMessage data={this.state.data} />
                     {partial}
-                    <NewGameButton onNewGameClick={this.handleNewGameClick} />
+                    <NewGameButton onNewGameClick={this.handleNewGameClick} data={this.state.data} />
                 </div>
             );
         }
@@ -92,10 +94,11 @@
             e.preventDefault();
             var spot = this.refs.spot.getDOMNode().value.trim();
             var letter = this.refs.letter.getDOMNode().value.trim();
+            var sessionID = this.props.data.sessionID
             if (!spot || !letter) {
                 return;
             }
-            this.props.onGameSubmit({spot: spot, letter: letter});
+            this.props.onGameSubmit({spot: spot, letter: letter, sessionID: sessionID});
             //clear field values
             this.refs.spot.getDOMNode().value = '';
             this.refs.letter.getDOMNode().value = '';
@@ -120,7 +123,8 @@
     var NewGameButton = React.createClass({
         handleClick: function(e) {
             e.preventDefault();
-            this.props.onNewGameClick();
+            var sessionID = this.props.data.sessionID
+            this.props.onNewGameClick({sessionID: sessionID});
             return;
         },
         render: function() {
@@ -175,6 +179,7 @@
         render: function() {
             return(
                 <div className="sessionStats">
+                    sessionID: {this.props.data.sessionID}
                     <p><em>Session Stats: </em>wins = {this.props.data.sessionWins}, losses = {this.props.data.sessionLosses}</p>
                 </div>
             );

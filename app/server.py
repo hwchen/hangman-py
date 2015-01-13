@@ -18,25 +18,36 @@ def index():
 
 @app.route('/game_state')
 def game_state():
+    """Starts a new session when this route is hit"""
+    #new session
+    new_session_id = uuid.uuid4().hex #in production, should be encrypted?
+    session_manager.new_session(new_session_id)
+    #new game
+    session = session_manager.get_session(new_session_id)
+    session.current_game.load_words("words.txt")
+    session.current_game.init_target()
     return jsonify(session.to_json())
 
 @app.route('/game_state', methods = ['PUT'])
 def put_guess():
     """basic game loop. refactored it into Session.iterate()"""
     guess_json = request.get_json(force=True)
+    session = session_manager.get_session(guess_json['sessionID'])
     session.iterate(guess_json['spot'],guess_json['letter'])
     return jsonify(session.to_json())
 
-@app.route('/new_game')
+@app.route('/new_game', methods = ['PUT']) 
 def new_game():
     """route for starting a new game"""
+    json_data = request.get_json(force=True)
+    session = session_manager.get_session(json_data['sessionID'])
     session.new_game()
-    session.current_game.load_words("words.txt")
-    session.current_game.init_target()
     return jsonify(session.to_json())
 
-@app.route('/cheat')
+@app.route('/cheat', methods = ['PUT']) 
 def cheat():
+    json_data = request.get_json(force=True)
+    session = session_manager.get_session(json_data['sessionID'])
     return jsonify(session.current_game.to_json())
 
 
@@ -55,27 +66,24 @@ class SessionManager(object):
     def __init__(self):
         self.sessions_dict = {}
 
-    def new_session(self):
-        new_session_id = uuid.uuid4()
-        self.sessions_dict[new_session_id] = Session()
+    def new_session(self, new_session_id):
+        self.sessions_dict[new_session_id] = Session(new_session_id)
 
     def get_session(self, sessionID):
         if sessionID in self.sessions_dict:
             return self.sessions_dict[sessionID]
 
     # def del_session()
-        
-    
 
 # This section for game logic.
 
 class Session(object):
 
-    def __init__(self,new_session_id = 1):
+    def __init__(self,new_session_id):
         self.sessionID = new_session_id 
         self.sessionWins = 0
         self.sessionLosses = 0
-        self.current_game = Game()
+        self.new_game()
 
     def to_json(self):
         return {'sessionID': self.sessionID,
@@ -89,6 +97,8 @@ class Session(object):
 
     def new_game(self):
         self.current_game = Game()
+        self.current_game.load_words("words.txt")
+        self.current_game.init_target()
 
     def update_statistics(self):
         """checks if game is a win or loss, then changes stats
@@ -183,8 +193,6 @@ class Game(object):
             self.result = "lose"
 
 if __name__ == '__main__':
-    session = Session()
-    session.current_game.load_words("words.txt")
-    session.current_game.init_target()
+    session_manager = SessionManager()
     app.run(debug=True)
 

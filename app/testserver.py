@@ -13,7 +13,7 @@ def index():
 
 @app.route('/game_state')
 def data():
-    data = {"sessionID": 10, "sessionWins": 4, "sessionLosses": 3, "current": "**rh**", "wrong": 8}
+    data = {"result": "continue", "sessionID": 10, "sessionWins": 4, "sessionLosses": 3, "current": "**rh**", "wrong": 8}
     return jsonify(data)
 
 @app.route('/game_state', methods = ['PUT'])
