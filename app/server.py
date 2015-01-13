@@ -14,23 +14,28 @@ app = Flask(__name__, static_url_path='')
 
 @app.route('/')
 def index():
+    """ serves static file index.html"""
     return app.send_static_file('index.html')
 
 @app.route('/game_state')
 def game_state():
-    """Starts a new session when this route is hit"""
+    """Starts a new session when this route is hit, which happens on
+        loading index.html for the first time"""
     #new session
     new_session_id = uuid.uuid4().hex #in production, should be encrypted?
     session_manager.new_session(new_session_id)
     #new game
     session = session_manager.get_session(new_session_id)
-    session.current_game.load_words("words.txt")
+    session.current_game.load_words("words.txt")#refactor to Session()
     session.current_game.init_target()
     return jsonify(session.to_json())
 
 @app.route('/game_state', methods = ['PUT'])
 def put_guess():
-    """basic game loop. refactored it into Session.iterate()"""
+    """basic game iteration. Takes JSON from request and extracts sessionID,
+        spot (the index as a string) and letter. Returns session information.
+        This route is hit whenever a guess is submitte from index.html"""
+
     guess_json = request.get_json(force=True)
     session = session_manager.get_session(guess_json['sessionID'])
     session.iterate(guess_json['spot'],guess_json['letter'])
@@ -38,7 +43,8 @@ def put_guess():
 
 @app.route('/new_game', methods = ['PUT']) 
 def new_game():
-    """route for starting a new game"""
+    """route for starting a new game. Takes a sessionID from input JSON,
+        returns session data"""
     json_data = request.get_json(force=True)
     session = session_manager.get_session(json_data['sessionID'])
     session.new_game()
@@ -46,6 +52,8 @@ def new_game():
 
 @app.route('/cheat', methods = ['PUT']) 
 def cheat():
+    """ Takes a sessionID from request JSON, returns game info which includes the 
+        target word"""
     json_data = request.get_json(force=True)
     session = session_manager.get_session(json_data['sessionID'])
     return jsonify(session.current_game.to_json())
@@ -63,6 +71,8 @@ def not_found(error):
 # Real scalability probably requires db lookups and sessions (closer to stateless)
 
 class SessionManager(object):
+    """ Sessions held in a dict, with each sessionID as key value,
+        derived from UUID (uuid4() is called in the route fn.)"""
     def __init__(self):
         self.sessions_dict = {}
 
@@ -70,14 +80,19 @@ class SessionManager(object):
         self.sessions_dict[new_session_id] = Session(new_session_id)
 
     def get_session(self, sessionID):
+        # currently a silent error... should I return keyerror?
         if sessionID in self.sessions_dict:
             return self.sessions_dict[sessionID]
 
-    # def del_session()
+    # def del_session():
+        #requires adding timestamp to session object
+        #garbage collect after say 1 hr after last access
 
 # This section for game logic.
 
 class Session(object):
+    """One session holds the current game, as well as statistics on 
+        performance in past games."""
 
     def __init__(self,new_session_id):
         self.sessionID = new_session_id 
@@ -97,13 +112,11 @@ class Session(object):
 
     def new_game(self):
         self.current_game = Game()
-        self.current_game.load_words("words.txt")
+        self.current_game.load_words("words.txt") #refactor into Session()
         self.current_game.init_target()
 
     def update_statistics(self):
-        """checks if game is a win or loss, then changes stats
-           (considered implementing stats change from Game object,
-           but seems bad to mutate from below)"""
+        """checks if game is a win or loss, then changes stats"""
         if self.current_game.result == "win":
             self.sessionWins += 1
             self.current_game.message = "You won!"
@@ -113,6 +126,8 @@ class Session(object):
             
 
     def iterate(self, spot, letter):
+        """ Iterate through a game loop of guess, update state (win or lose), and 
+            update the statistics if win or lose"""
         self.current_game.guess(spot,letter)
         self.current_game.update_state()
         self.update_statistics()
@@ -120,7 +135,6 @@ class Session(object):
 class Game(object):
 
     def __init__(self):
-        """Initialize Attributes"""
         self.words = []
         self.target = ""
         self.wrong = 0
@@ -180,13 +194,15 @@ class Game(object):
                 self.current = self.current[:spot_int] + letter
             else:
                 self.current = self.current[:spot_int] + letter + self.current[spot_int + 1:]
-            self.message = "Good guess!"
+            self.message = "Good guess! {0} is correct!".format(letter)
         else: 
             print("no")
             self.wrong += 1
-            self.message = "Sorry, incorrect guess."
+            self.message = "Sorry, {0} at {1} is incorrect.".format(letter, spot)
 
     def update_state(self):
+        """ when current state matches target, it's a win. More than 10 guesses
+            is a loss. Anything else stays continue"""
         if self.current == self.target:
             self.result = "win"
         elif self.wrong == 10:
